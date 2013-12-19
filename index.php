@@ -13,14 +13,14 @@
 <!-- TODO Set up social media metadata for sharing -->
 <meta property="og:type" content="website" />
 <meta itemprop="name" content="reddit.tv" />
-<meta itemprop="headline" content="" />
-<meta property="og:title" content="reddit.tv" />
+<meta itemprop="headline" content="Reddit.tv" />
+<meta property="og:title" content="Reddit.tv" />
 <meta itemprop="description" content="" />
 <meta property="og:description" content="" />
 <link itemprop="url" href="" />
 <meta property="og:url" content="" />
-<link itemprop="thumbnailUrl" href="" />
-<meta property="og:image" content="" />
+<link itemprop="thumbnailUrl" href="http://reddit.tv/img/logo.png" />
+<meta property="og:image" content="http://reddit.tv/img/logo.png" />
 
 <!-- Unsemantic Grid -->
 <!--[if (gt IE 8) | (IEMobile)]><!-->

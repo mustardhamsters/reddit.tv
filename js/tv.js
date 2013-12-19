@@ -529,7 +529,7 @@ var RedditTV = Class.extend({
 
 		var chanAttr = {
 				href: '#' + chan.feed,
-				title: chan_title,
+				title: chan_title+" - Drag to reorder",
 				'data-feed' : chan.feed
 			};
 
