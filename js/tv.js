@@ -1209,7 +1209,6 @@ var RedditTV = Class.extend({
 
 			if ( newAnchor.hasClass('sponsored') || thumbAnchor.hasClass('sponsored') ) {
 				newAnchor.trigger('click');
-				if (thumbAnchor.hasClass('sponsored')) window.location.hash = newAnchor.attr('href');
 				return;
 			}
 		}
@@ -1302,7 +1301,7 @@ var RedditTV = Class.extend({
 				parts = anchor.split('/');
 				hash = '/' + parts[1] + '/' + parts[2] + '/' + video.id;
 			}
-			History.replaceState(null, 'reddit.tv', hash);
+			History.pushState(null, 'reddit.tv', hash);
 			self.Globals.current_anchor = hash;
 
 			self.gaHashTrack();
