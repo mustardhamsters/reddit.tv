@@ -8,7 +8,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <title>reddit.tv</title>
 
-<link rel="shortcut icon" href="favicon.ico" />
+<link rel="shortcut icon" href="/favicon.ico" />
 
 <!-- TODO Set up social media metadata for sharing -->
 <meta property="og:type" content="website" />
@@ -24,23 +24,23 @@
 
 <!-- Unsemantic Grid -->
 <!--[if (gt IE 8) | (IEMobile)]><!-->
-  <link rel="stylesheet" href="./css/unsemantic-grid-responsive.css" />
+  <link rel="stylesheet" href="/css/unsemantic-grid-responsive.css" />
 <!--<![endif]-->
 <!--[if (lt IE 9) & (!IEMobile)]>
-  <link rel="stylesheet" href="./css/unsemantic-grid-ie.css" />
+  <link rel="stylesheet" href="/css/unsemantic-grid-ie.css" />
 <![endif]-->
 
-<link rel="stylesheet" href="css/layout.css" type="text/css" />
-<link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" />
-<link rel="stylesheet" href="css/theme_light.css" type="text/css" id="theme" />
+<link rel="stylesheet" href="/css/layout.css" type="text/css" />
+<link rel="stylesheet" href="/css/bootstrap.min.css" type="text/css" />
+<link rel="stylesheet" href="/css/theme_light.css" type="text/css" id="theme" />
 <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic' rel='stylesheet' type='text/css'>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
-<script src="js/plugins.js" type="text/javascript"></script>
-<script src="js/bootstrap.min.js" type="text/javascript"></script>
+<script src="/js/plugins.js" type="text/javascript"></script>
+<script src="/js/bootstrap.min.js" type="text/javascript"></script>
 
-<script src="js/tv.youtube.js" type="text/javascript"></script>
-<script src="js/tv.vimeo.js" type="text/javascript"></script>
+<script src="/js/tv.youtube.js" type="text/javascript"></script>
+<script src="/js/tv.vimeo.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 Globals = {
@@ -49,7 +49,7 @@ Globals = {
   sponsored_channels: <?php echo getSponsoredChannels(); ?>
 };
 </script>
-<script src="js/tv.js" type="text/javascript"></script>
+<script src="/js/tv.js" type="text/javascript"></script>
 
 </head>
 <body>
@@ -57,7 +57,7 @@ Globals = {
     <div id="header-container">
       <div id="header" class="grid-container">
         <div id="logo" class="grid-25">
-          <a href="/"><img src="img/logo.png" /></a>
+          <a href="/"><img src="/img/logo.png" /></a>
         </div>
         <div id="now-playing-title" class="grid-50 center-align">
           /r/subreddit &#9660;
@@ -115,8 +115,8 @@ Globals = {
         <div id="video-embed" class="grid-100 mobile-grid-100">
 
         </div>
-        <a id="prev-button" href="javascript:void(0);"><img src="img/arrow-prev.png" /></a>
-        <a id="next-button" href="javascript:void(0);"><img src="img/arrow-next.png" /></a>
+        <a id="prev-button" href="#prev"><img src="/img/arrow-prev.png" /></a>
+        <a id="next-button" href="#next"><img src="/img/arrow-next.png" /></a>
         <div id="video-meta">
           <div id="video-description" class="grid-70 mobile-grid-75">
             <span id="video-sponsored-label" class="sponsored">SPONSORED </span>
@@ -183,6 +183,6 @@ Globals = {
 
 <div id="vid-list-tooltip"></div>
 
-<script src="js/analytics.js" type="text/javascript"></script>
+<script src="/js/analytics.js" type="text/javascript"></script>
 </body>
 </html>

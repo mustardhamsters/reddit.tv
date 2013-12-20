@@ -4,7 +4,7 @@ var RedditTV = Class.extend({
 
 		self.Globals = $.extend({}, {
 			/* Current URL for AJAX, etc */
-			current_url: window.location.protocol + '//' + window.location.host + window.location.pathname,
+			current_url: window.location.protocol + '//' + window.location.host + '/',
 
 			/* build uri for search type channels */
 			search_str: (function () {
@@ -89,7 +89,7 @@ var RedditTV = Class.extend({
 		self.displayChannels();
 		self.setBindings();
 
-		if (!self.Globals.current_anchor) {
+		if (self.Globals.current_anchor == '/') {
 			var firstChannel = $('#channels a.channel:not(#add-channel-button):first');
 			if (firstChannel.length) self.loadChannel(self.getChanObj(firstChannel.data('feed')), null);
 		}
@@ -162,6 +162,8 @@ var RedditTV = Class.extend({
 			self.gaEventTrack('Channel', 'Skip', self.Globals.cur_chan.feed);
 
 			self.loadVideo(direction);
+
+			return false;
 		});
 		$('#video-list').bind('mousewheel', function(event,delta){
 			this.scrollLeft -= (delta * 30);
@@ -210,15 +212,9 @@ var RedditTV = Class.extend({
 			}
 		});
 
-		/* Anchor Checker */
-		if("onhashchange" in window){
-			self.checkAnchor(); //perform initial check if hotlinked
-			window.onhashchange = function(){
-				self.checkAnchor();
-			};
-		}else{
-			setInterval(self.checkAnchor, 100);
-		}
+		/* Anchor Checker, now History.js state checker */
+		self.checkAnchor(); //perform initial check if hotlinked
+		History.Adapter.bind(window, 'statechange', self.checkAnchor);
 
 		// Video thumbnail onClicks
 		$('#video-list').on(
@@ -232,7 +228,11 @@ var RedditTV = Class.extend({
 
 				if ( $(this).hasClass('sponsored') ) {
 					self.loadVideo(parseInt($(this).attr('data-adNum')), $(this).attr('data-unique'));
+				} else {
+					History.pushState(null, 'reddit.tv', $(this).attr('href'));
 				}
+
+				return false;
 			}
 		);
 
@@ -241,8 +241,15 @@ var RedditTV = Class.extend({
 			'click',
 			'a.channel',
 			function() {
+				var feed = $(this).data('feed');
 				$('#channels a.channel').removeClass('focus');
 				$(this).addClass('focus');
+
+				self.loadChannel(self.getChanObj(feed), null);
+
+				History.pushState(null, 'reddit.tv: ' + feed, feed);
+
+				return false;
 			}
 		);
 
@@ -528,7 +535,7 @@ var RedditTV = Class.extend({
 		display_title = chan.channel; // Let's not shorten the titles that way right now
 
 		var chanAttr = {
-				href: '#' + chan.feed,
+				href: chan.feed,
 				title: chan_title,
 				'data-feed' : chan.feed
 			};
@@ -619,7 +626,7 @@ var RedditTV = Class.extend({
 			$video_title = $('#video-title'),
 			this_chan, title, getChan, anchor;
 
-		if (!video_id) video_id = null;
+		if (!video_id || video_id == 'ad') video_id = null;
 
 		getChan = self.getChanObj(channel.feed);
 		this_chan = (getChan) ? getChan : channel;
@@ -1003,14 +1010,14 @@ var RedditTV = Class.extend({
 	checkAnchor: function() {
 		/* Anchor Checker */
 		//check fo anchor changes, if there are do stuff
-		if(self.Globals.current_anchor === document.location.hash)
+		if(self.Globals.current_anchor === document.location.pathname)
 			return false;
 
-		self.Globals.current_anchor = document.location.hash;
-		if(!self.Globals.current_anchor)
+		self.Globals.current_anchor = document.location.pathname;
+		if (self.Globals.current_anchor == '/')
 			return false;
 
-		var anchor = self.Globals.current_anchor.substring(1);
+		var anchor = self.Globals.current_anchor;
 		var parts = anchor.split("/"); // #/r/videos/id
 		parts = $.map(parts, self.stripHTML);
 
@@ -1163,10 +1170,10 @@ var RedditTV = Class.extend({
 	}, // loadVideoList()
 
 	loadVideo: function(video, sponsored) {
-		var this_chan = self.Globals.cur_chan,
-			this_video = self.Globals.cur_video,
-			selected_video = this_video,
-			videos_size = 0,
+		var this_chan        = self.Globals.cur_chan,
+			this_video       = self.Globals.cur_video,
+			selected_video   = this_video,
+			videos_size      = 0,
 			sponsoredChannel = (this.owner == 'sponsor'),
 			thumbAnchor, newAnchor, isAdVideo, video;
 
@@ -1251,7 +1258,7 @@ var RedditTV = Class.extend({
 		}
 
 		if ( (selected_video !== this_video && !sponsored || sponsored) || video === 'first' || video === 0) {
-			isAdVideo = ( sponsored && self.Globals.cur_chan.owner != 'sponsor' );
+			isAdVideo = ( sponsored );
 			self.Globals.cur_video = (isAdVideo) ? 0 : selected_video;
 			video = (isAdVideo) ? self.Globals.ads.videos[selected_video] : self.Globals.videos[this_chan.feed].video[selected_video];
 
@@ -1299,22 +1306,17 @@ var RedditTV = Class.extend({
 			}
 
 			//set location hash
-			var parts, hash = document.location.hash;
+			var parts, path, hash = document.location.pathname;
 			if (sponsored && !sponsoredChannel) {
-				hash = '/ad/' + video.index;
+				path = this_chan.feed + '/ad';
+				hash = path + '/' + video.index;
 			} else {
-				if (!hash) {
-					var feed = this_chan.feed;
-					parts = feed.split("/");
-					hash = '/'+parts[1]+'/'+parts[2]+'/'+video.id;
-				} else {
-					var anchor = hash.substring(1);
-					parts = anchor.split("/"); // #/r/videos/id
-					hash = '/'+parts[1]+'/'+parts[2]+'/'+video.id;
-				}
-				window.location.hash = hash;
+				anchor = (hash == '/') ? this_chan.feed : hash;
+				parts = anchor.split('/');
+				path = hash = '/' + parts[1] + '/' + parts[2] + '/' + video.id;
 			}
-			self.Globals.current_anchor = '#' + hash;
+			History.replaceState(null, 'reddit.tv', path);
+			self.Globals.current_anchor = hash;
 
 			self.gaHashTrack();
 
@@ -1376,11 +1378,11 @@ var RedditTV = Class.extend({
 		if ( !this_video.title ) this_video.title_unesc = this_video.title_quot = '';
 
 		videoId = (self.Globals.videos[this_chan.feed]) ? self.Globals.videos[this_chan.feed].video[id].id : id;
-		url = ( !sponsored ) ? this_chan.feed + '/' + videoId : '';
+		url = ( !sponsored ) ? this_chan.feed + '/' + videoId : '#';
 
 		anchorId = ( !sponsored ) ? ' id="video-list-thumb-' + id + '"' : '';
 		if (sponsored) anchorClass.push('sponsored');
-		$thumbnail = $('<a href="#' + url + '"' + anchorId + ' class="' + anchorClass.join(' ') + '"></a>');
+		$thumbnail = $('<a href="' + url + '"' + anchorId + ' class="' + anchorClass.join(' ') + '"></a>');
 		if (this_video.title_quot) $thumbnail.attr('title', this_video.title_quot);
 		$thumbnail.data('id', id);
 
@@ -1406,6 +1408,8 @@ var RedditTV = Class.extend({
 	loadVideoById: function(video_id) {
 		var this_chan = self.Globals.cur_chan,
 		    video     = self.findVideoById(video_id, this_chan.feed);  //returns number typed
+
+		if (video_id == 'ad') return;
 
 		if(video !== false){
 			self.loadVideoList(this_chan);
@@ -1723,7 +1727,6 @@ var RedditTV = Class.extend({
 		if (!feed) return false;
 
 		chan.trigger('click');
-		document.location.href = chan.attr('href');
 
 		return true;
 	}, // changeChan()
