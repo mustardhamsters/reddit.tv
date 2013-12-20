@@ -626,7 +626,7 @@ var RedditTV = Class.extend({
 			$video_title = $('#video-title'),
 			this_chan, title, getChan, anchor;
 
-		if (!video_id || video_id == 'ad') video_id = null;
+		if (!video_id) video_id = null;
 
 		getChan = self.getChanObj(channel.feed);
 		this_chan = (getChan) ? getChan : channel;
@@ -1023,10 +1023,13 @@ var RedditTV = Class.extend({
 
 		var feed     = '/' + parts[1] + '/' + parts[2],
 		    new_chan = { 'feed': feed },
-		    videoId  = parts[3];
+		    videoId  = parts[3],
+		    adId     = parts[4];
 
-		if (videoId === undefined || videoId === null || videoId === '')
+		if (videoId === undefined || videoId === null || videoId === '' || (videoId == 'ad' && !adId))
 			videoId = null;
+
+		if (videoId == 'ad') videoId += '/' + adId;
 
 		if (self.Globals.cur_chan.feed != feed) {
 			self.loadChannel(new_chan, videoId);
@@ -1288,34 +1291,18 @@ var RedditTV = Class.extend({
 			}
 
 			// enable/disable nav-buttons at end/beginning of playlist
-			var $prevbutton = $('#prev-button'), $nextbutton = $('#next-button');
-			if(selected_video <= 0){
-				$prevbutton.stop(true,true).fadeOut('slow', function() {
-					$(this).css({ 'visibility':'hidden', 'display':'inline' });
-				});
-			}else if($prevbutton.css('visibility') === 'hidden'){
-				$prevbutton.hide().css({ 'visibility':'visible' }).stop(true,true).fadeIn('slow');
-			}
-
-			if(self.Globals.cur_video >= videos_size){
-				$nextbutton.stop(true,true).fadeOut('slow', function() {
-					$(this).css({ 'visibility':'hidden', 'display':'inline' });
-				});
-			}else if($nextbutton.css('visibility') === 'hidden'){
-				$nextbutton.hide().css({ 'visibility':'visible' }).stop(true,true).fadeIn('slow');
-			}
+			self.navArrowVisibility();
 
 			//set location hash
-			var parts, path, hash = document.location.pathname;
+			var parts, hash = document.location.pathname;
 			if (sponsored && !sponsoredChannel) {
-				path = this_chan.feed + '/ad';
-				hash = path + '/' + video.index;
+				hash = this_chan.feed + '/ad/' + CryptoJS.MD5(self.Globals.ads.videos[video.index].video_url).toString().substr(0, 6);
 			} else {
 				anchor = (hash == '/') ? this_chan.feed : hash;
 				parts = anchor.split('/');
-				path = hash = '/' + parts[1] + '/' + parts[2] + '/' + video.id;
+				hash = '/' + parts[1] + '/' + parts[2] + '/' + video.id;
 			}
-			History.replaceState(null, 'reddit.tv', path);
+			History.replaceState(null, 'reddit.tv', hash);
 			self.Globals.current_anchor = hash;
 
 			self.gaHashTrack();
@@ -1378,7 +1365,7 @@ var RedditTV = Class.extend({
 		if ( !this_video.title ) this_video.title_unesc = this_video.title_quot = '';
 
 		videoId = (self.Globals.videos[this_chan.feed]) ? self.Globals.videos[this_chan.feed].video[id].id : id;
-		url = ( !sponsored ) ? this_chan.feed + '/' + videoId : '#';
+		url = ( !sponsored ) ? this_chan.feed + '/' + videoId : self.Globals.cur_chan.feed + '/ad/' + CryptoJS.MD5(this_video.video_url).toString().substr(0, 6);
 
 		anchorId = ( !sponsored ) ? ' id="video-list-thumb-' + id + '"' : '';
 		if (sponsored) anchorClass.push('sponsored');
@@ -1407,9 +1394,16 @@ var RedditTV = Class.extend({
 
 	loadVideoById: function(video_id) {
 		var this_chan = self.Globals.cur_chan,
-		    video     = self.findVideoById(video_id, this_chan.feed);  //returns number typed
+		    video;
 
-		if (video_id == 'ad') return;
+		if ( video_id.match(/^ad\//) ) { // Load ad
+			self.loadVideoList(this_chan);
+			var adLoaded = self.loadAdByHash(video_id.substr(3));
+			if (!adLoaded) self.loadVideo(0);
+			return;
+		}
+
+		video = self.findVideoById(video_id, this_chan.feed);  //returns number typed
 
 		if(video !== false){
 			self.loadVideoList(this_chan);
@@ -1425,6 +1419,24 @@ var RedditTV = Class.extend({
 				});
 		}
 	}, // loadVideoById()
+
+	loadAdByHash: function(hash) {
+		var index = false;
+
+		$.each(self.Globals.ads.videos, function(i, ad) {
+			var adHash = CryptoJS.MD5(ad.video_url).toString().substr(0, 6);
+			if (hash != adHash) return;
+
+			index = ad.index;
+		});
+
+		if (index !== false) {
+			$('#video-list a.sponsored[data-adnum="' + index + '"]:first').trigger('click');
+			return true;
+		} else {
+			return false;
+		}
+	}, // loadVideoByHash()
 
 	videoListScrollbar: function() {
 		var scrollPane = $('#video-list').addClass('scrollbar'),
@@ -1467,6 +1479,29 @@ var RedditTV = Class.extend({
 				.css('background-image', 'none')
 				.html('<h1>ERROR</h1><span>' + text + '</span>');
 	}, // tvError()
+
+	navArrowVisibility: function() {
+		var $focusedVid = $('#video-list a.thumbnail.focus:first'),
+		    $prevButton = $('#prev-button'),
+		    $nextButton = $('#next-button');
+
+			if ( $focusedVid.is(':first-child') ) {
+				$prevButton.stop(true,true).fadeOut('slow', function() {
+					$(this).css({ 'visibility':'hidden', 'display':'inline' });
+				});
+			} else if ($prevButton.css('visibility') === 'hidden'){
+				$prevButton.hide().css({ 'visibility':'visible' }).stop(true,true).fadeIn('slow');
+			}
+
+			if ( $focusedVid.is(':last-child') ) {
+				$nextButton.stop(true,true).fadeOut('slow', function() {
+					$(this).css({ 'visibility':'hidden', 'display':'inline' });
+				});
+			} else if($nextButton.css('visibility') === 'hidden') {
+				$nextButton.hide().css({ 'visibility':'visible' }).stop(true,true).fadeIn('slow');
+			}
+
+	}, // navArrowVisiblity()
 
 	toggleAddChannel: function(instant) {
 		var vid  = $('#video-embed'),
