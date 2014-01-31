@@ -680,7 +680,7 @@ function uploadChannelThumb(input) {
 				channelThumbMsg('success', 'Channel thumbnail saved!');
 
 				$('#channel-thumbnails li.channel[data-feed="' + data.feed + '"] div.thumbnail')
-					.css('background-image', data.thumbnail_url);
+					.css('background-image', "url('"+data.thumbnail_url+"')");
 			} else {
 				channelThumbMsg('danger', 'Error uploading channel thumbnail.');
 			}
