@@ -651,20 +651,21 @@ function siteMsg(status, msg) {
 }
 
 function channelThumbMsg(status, msg) {
-	$('#channels-thumbnails-message')
-		.removeClass()
-		.addClass(status)
+	$('#channels-thumbnails-message').removeClass().addClass('alert alert-' + status)
 		.text(msg);
 }
 
 function uploadChannelThumb(input) {
 	channelThumbMsg('Uploading...');
 
-	var postData = new FormData();
+	var channel  = input.parents('li.channel'),
+	    postData = new FormData();
+
+	channel.addClass('uploading');
 
 	postData.append('ajax', true);
 	postData.append('type', 'channel_thumb');
-	postData.append('feed', input.parents('li.channel').data('feed'));
+	postData.append('feed', channel.data('feed'));
 	postData.append('image', input[0].files[0]);
 
 	$.ajax({
@@ -680,54 +681,22 @@ function uploadChannelThumb(input) {
 				channelThumbMsg('success', 'Channel thumbnail saved!');
 
 				$('#channel-thumbnails li.channel[data-feed="' + data.feed + '"] div.thumbnail')
-					.css('background-image', "url('"+data.thumbnail_url+"')");
+					.css('background-image', 'url(' + data.thumbnail_url + '?' + Date.now() + ')');
+
+				$('#channel-thumbnails li.channel.uploading').removeClass('uploading');
 			} else {
 				channelThumbMsg('danger', 'Error uploading channel thumbnail.');
+
+				$('#channel-thumbnails li.channel.uploading').removeClass('uploading');
 			}
 		},
 		error: function(jXHR, textStatus, errorThrown) {
 			channelThumbMsg('danger', 'Error uploading channel thumbnail.');
+
+			$('#channel-thumbnails li.channel.uploading').removeClass('uploading');
+
 		    console.log('[ERROR] '+textStatus);
 		    console.log('[ERROR] '+errorThrown);
 		}
 	});
-
-/*var formData = new FormData($('*formId*')[0]);
-                    $.ajax({
-                        url: 'script',  //server script to process data
-                        type: 'POST',
-                        xhr: function() {  // custom xhr
-                            myXhr = $.ajaxSettings.xhr();
-                            if(myXhr.upload){ // if upload property exists
-                                myXhr.upload.addEventListener('progress', progressHandlingFunction, false); // progressbar
-                            }
-                            return myXhr;
-                        },
-                        //Ajax events
-                        success: completeHandler = function(data) {
-                            // workaround for crome browser // delete the fakepath
-                            if(navigator.userAgent.indexOf('Chrome')) {
-                                var catchFile = $(":file").val().replace(/C:\\fakepath\\/i, '');
-                            }
-                            else {
-                                var catchFile = $(":file").val();
-                            }
-                            var writeFile = $(":file");
-
-                            writeFile.html(writer(catchFile));
-
-                            $("*setIdOfImageInHiddenInput*").val(data.logo_id);
-
-                        },
-                        error: errorHandler = function() {
-                            alert("Något gick fel");
-                        },
-                        // Form data
-                        data: formData,
-                        //Options to tell JQuery not to process data or worry about content-type
-                        cache: false,
-                        contentType: false,
-                        processData: false
-                    }, 'json');*/
-
 }

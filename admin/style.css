@@ -346,11 +346,68 @@ div.show-videos ol.videos {
   margin-top: 40px;
 }
 
-#channel-thumbnails li.channel:hover .file-input-wrapper {
+#channel-thumbnails li.channel:not(.uploading):hover .file-input-wrapper {
   display: inline-block;
 }
 #channel-thumbnails li.channel .file-input-name {
   display: none;
+}
+
+#channel-thumbnails li.channel.uploading div.thumbnail {
+  position: relative;
+  border-color: #5f99cf;
+}
+
+#channel-thumbnails li.channel.uploading div.thumbnail:before {
+  content: '';
+  position: absolute;
+  background: url(img/chanthumb-stripes.png);
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 2;
+
+  -webkit-animation: chanthumbload 2s linear infinite;
+     -moz-animation: chanthumbload 2s linear infinite;
+       -o-animation: chanthumbload 2s linear infinite;
+          animation: chanthumbload 2s linear infinite;
+}
+
+@-webkit-keyframes chanthumbload {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 100% 0;
+  }
+}
+
+@-moz-keyframes chanthumbload {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 100% 0;
+  }
+}
+
+@-o-keyframes chanthumbload {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 100% 0;
+  }
+}
+
+@keyframes chanthumbload {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 100% 0;
+  }
 }
 
 /*!
