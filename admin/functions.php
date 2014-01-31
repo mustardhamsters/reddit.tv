@@ -259,6 +259,8 @@ function uploadChannelThumb() {
 
 	$res = new stdClass();
 	$res->success = $id ? true : false;
+	$res->feed = $_POST['feed'];
+	$res->thumbnail_url = $image_url;
 	if (!empty($errors)) $res->errors = $errors;
 
 	jsonForAjax($res);

@@ -653,7 +653,7 @@ function siteMsg(status, msg) {
 function channelThumbMsg(status, msg) {
 	$('#channels-thumbnails-message')
 		.removeClass()
-		.addClass('status')
+		.addClass(status)
 		.text(msg);
 }
 
@@ -676,9 +676,11 @@ function uploadChannelThumb(input) {
 		contentType: false,
 		processData: false,
 		success: function(data) {
-			console.log(data);
 			if (data.success) {
 				channelThumbMsg('success', 'Channel thumbnail saved!');
+
+				$('#channel-thumbnails li.channel[data-feed="' + data.feed + '"] div.thumbnail')
+					.css('background-image', data.thumbnail_url);
 			} else {
 				channelThumbMsg('danger', 'Error uploading channel thumbnail.');
 			}
