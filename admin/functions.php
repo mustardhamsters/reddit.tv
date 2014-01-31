@@ -24,7 +24,8 @@ function ajaxFunc() {
 		'videos',
 		'skins',
 		'channels',
-		'settings'
+		'settings',
+		'channel_thumb',
 	);
 
 	if (!in_array($_REQUEST['type'], $funcs)) jsonError('Invalid action.');
@@ -33,6 +34,8 @@ function ajaxFunc() {
 		jsonQuery();
 	} else if ($_REQUEST['type'] == 'settings') {
 		updateSettings();
+	} else if ($_REQUEST['type'] == 'channel_thumb') {
+		uploadChannelThumb();
 	} else {
 		addEdit();
 	}
@@ -194,6 +197,8 @@ function imageUpload($filename, $max_width = 0, $max_height = 0) {
 }
 
 function pickFilename($arr=Array(), $ext='.jpg') {
+	if (is_string($arr)) $arr = Array($arr);
+
 	$arr = array_filter($arr);
 	foreach ($arr as $key => $val) {
 		$sanitized = sanitize_file_name($val);
@@ -234,6 +239,28 @@ function updateSettings() {
 
 	$res = new stdClass();
 	$res->success = $id ? true : false;
+	jsonForAjax($res);
+}
+
+function uploadChannelThumb() {
+	$channel = R::findOne('channel',
+					' feed = ? ', array($_POST['feed']) );
+
+	$image_url = imageUpload(pickFilename($_POST['feed']), 230);
+	if ($image_url) {
+		$channel->thumbnail_url = $image_url;
+	} else {
+		$errors[] = 'Error uploading channel thumbnail.';
+	}
+
+	$channel->updated_on = R::isoDateTime();
+
+	$id = empty($errors) ? R::store($channel) : 0;
+
+	$res = new stdClass();
+	$res->success = $id ? true : false;
+	if (!empty($errors)) $res->errors = $errors;
+
 	jsonForAjax($res);
 }
 

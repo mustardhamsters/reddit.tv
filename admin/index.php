@@ -674,7 +674,40 @@
                 <span class="name">Drag here to delete</span>
             </div>
           </div>
+        </form>
 
+        <h3>Channel Thumbnails</h3>
+        <form id="channel-thumbnails" action="" enctype="multipart/form-data" method="post" class="well form-horizontal" role="form">
+          <input type="hidden" name="type" value="channel-thumbnails" />
+          <div class="form-group row control-group">
+            <div class="col-lg-6">
+              <input id="channel-thumbnails-input" type="text" class="form-control" placeholder="Search" />
+            </div>
+
+            <div class="col-lg-6">
+              <div id="channels-thumbnails-message"></div>
+            </div>
+          </div>
+
+          <div class="channels clearfix">
+            <ul class="list-unstyled">
+              <?php
+                $channel_thumbs = R::find('channel', '
+                  ORDER BY feed
+                  ');
+
+                foreach ($channel_thumbs as $channel) :
+                  $thumb_url = $channel->thumbnail_url;
+              ?>
+                  <li class="channel col-lg-3" data-feed="<?php echo $channel->feed; ?>">
+                    <div class="thumbnail"<?php if ($thumb_url != '') : ?> style="background-image: url(<?php echo $thumb_url; ?>);"<?php endif; ?>>
+                      <input class="btn-default" type="file" name="image" title="Upload" />
+                    </div>
+                    <span class="name"><?php echo $channel->feed; ?></span>
+                  </li>
+              <?php endforeach; ?>
+            </ul>
+          </div>
         </form>
       </div> <!-- Settings -->
 

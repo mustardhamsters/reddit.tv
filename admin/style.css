@@ -293,7 +293,7 @@ div.show-videos ol.videos {
   background-position: center center;
 }
 
-#default-channels-message, #recommended-channels-message {
+#default-channels-message, #recommended-channels-message, #channels-thumbnails-message {
   margin: 0;
   padding: 6px 15px;
 }
@@ -339,6 +339,18 @@ div.show-videos ol.videos {
 
 #add-channel-button .name {
   border: none !important;
+}
+
+#channel-thumbnails li.channel .file-input-wrapper {
+  display: none;
+  margin-top: 40px;
+}
+
+#channel-thumbnails li.channel:hover .file-input-wrapper {
+  display: inline-block;
+}
+#channel-thumbnails li.channel .file-input-name {
+  display: none;
 }
 
 /*!

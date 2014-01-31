@@ -439,6 +439,42 @@ $.each(channelTypes, function(i, channelType) {
 	});
 }); // $.each(channelTypes)
 
+// Channel thumbnail search
+$('#channel-thumbnails').css({ height : $('#channel-thumbnails').outerHeight() });
+
+$('#channel-thumbnails-input')
+	.on('keyup', function() {
+		var input = $(this),
+		    val   = input.val();
+
+		if ( val == '' ) {
+			$('#channel-thumbnails li.channel').show();
+			return;
+		}
+
+		$('#channel-thumbnails li.channel').hide();
+		$('#channel-thumbnails li.channel[data-feed*="' + val + '"]').show();
+	});
+
+// Channel thumbnail uploading
+$('#channel-thumbnails input[type=file]')
+	.on('change', function() {
+		var file  = this.files[0],
+		    type  = file.type,
+		    input = $(this),
+		    li    = input.parents('li.channel');
+
+		if ( !type.match(/^image\/(png|gif|jpe?g)$/) ) {
+			$('#channels-thumbnails-message')
+				.addClass('error')
+				.text('Not an image!');
+
+			return;
+		}
+
+		uploadChannelThumb(input);
+	});
+
 //end document.ready
 });
 
@@ -597,7 +633,7 @@ function youtubeThumb(id, ele) {
 			var localResize = new LocalResize(this, options);
 
 			// Store plugin object in this element's data
-			element.data('localResize', localResize);
+				element.data('localResize', localResize);
 		});
 	};
 })(jQuery);
@@ -612,4 +648,84 @@ function siteMsg(status, msg) {
       "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">×</button>"+
       "<span class=\"alert-text\">"+msg+"</span>"+
     "</div>");
+}
+
+function channelThumbMsg(status, msg) {
+	$('#channels-thumbnails-message')
+		.removeClass()
+		.addClass('status')
+		.text(msg);
+}
+
+function uploadChannelThumb(input) {
+	channelThumbMsg('Uploading...');
+
+	var postData = new FormData();
+
+	postData.append('ajax', true);
+	postData.append('type', 'channel_thumb');
+	postData.append('feed', input.parents('li.channel').data('feed'));
+	postData.append('image', input[0].files[0]);
+
+	$.ajax({
+		url: window.location.origin + window.location.pathname,
+		data: postData,
+		method: 'POST',
+		dataType: 'json',
+		cache: false,
+		contentType: false,
+		processData: false,
+		success: function(data) {
+			console.log(data);
+			if (data.success) {
+				channelThumbMsg('success', 'Channel thumbnail saved!');
+			} else {
+				channelThumbMsg('danger', 'Error uploading channel thumbnail.');
+			}
+		},
+		error: function(jXHR, textStatus, errorThrown) {
+			channelThumbMsg('danger', 'Error uploading channel thumbnail.');
+		    console.log('[ERROR] '+textStatus);
+		    console.log('[ERROR] '+errorThrown);
+		}
+	});
+
+/*var formData = new FormData($('*formId*')[0]);
+                    $.ajax({
+                        url: 'script',  //server script to process data
+                        type: 'POST',
+                        xhr: function() {  // custom xhr
+                            myXhr = $.ajaxSettings.xhr();
+                            if(myXhr.upload){ // if upload property exists
+                                myXhr.upload.addEventListener('progress', progressHandlingFunction, false); // progressbar
+                            }
+                            return myXhr;
+                        },
+                        //Ajax events
+                        success: completeHandler = function(data) {
+                            // workaround for crome browser // delete the fakepath
+                            if(navigator.userAgent.indexOf('Chrome')) {
+                                var catchFile = $(":file").val().replace(/C:\\fakepath\\/i, '');
+                            }
+                            else {
+                                var catchFile = $(":file").val();
+                            }
+                            var writeFile = $(":file");
+
+                            writeFile.html(writer(catchFile));
+
+                            $("*setIdOfImageInHiddenInput*").val(data.logo_id);
+
+                        },
+                        error: errorHandler = function() {
+                            alert("Något gick fel");
+                        },
+                        // Form data
+                        data: formData,
+                        //Options to tell JQuery not to process data or worry about content-type
+                        cache: false,
+                        contentType: false,
+                        processData: false
+                    }, 'json');*/
+
 }
